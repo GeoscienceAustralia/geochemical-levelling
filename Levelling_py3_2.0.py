@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Dec 11 14:52:10 2018
-
-@author: u29043
-"""
-
 import numpy as np
 import scipy.stats as st
 import pandas as pd
