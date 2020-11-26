@@ -15,7 +15,7 @@ robust = 1 # use 0 for ordinary least squares, use 1 for robust Huber regression
 #should be the original dataset for linear regression or the data to level
 DATAONE_filename = r'C:\Users\u29043\Desktop\Levelling Paper\NGSA_Thomson\Eulo_Toompine_TILL-1.xlsx'
 #should be the re-analysed dataset for linear regression or the correction factors for levelling
-DATATWO_filename = r'C:\Users\u29043\Desktop\Levelling Paper\NGSA_Thomson\NGSA_Standards-cut_TILL-1.xlsx' 
+DATATWO_filename = r'C:\Users\u29043\Desktop\Levelling Paper\NGSA_Thomson\NGSA_Standards-cut_TILL-1.xlsx'
 # Figure legends
 DATAONE =  'Eulo-Toompine'# Legend information - X for LR (should be the original dataset)
 DATATWO =  'NGSA' # Legend information - Y for LR (should be the re-analysed dataset)
@@ -23,7 +23,15 @@ DATATWO =  'NGSA' # Legend information - Y for LR (should be the re-analysed dat
 SaveLocation = r'C:\Users\u29043\Desktop\New Code Test\Standards'
 FileName = 'StandardsTest' #Correction factor file name
 
-def IMPORT(filename): #imports data from excel sheets, must be xlsx no csv
+def IMPORT(filename):
+    """
+    IMPORT is a function to load in excel xlsx documents and split them into
+    the data and the headings.
+    The function uses the full path to the file in order to load it.
+
+    :param filename: the full unc path to the xlsx document
+    :return: returns the data and the header
+    """
     xl = pd.ExcelFile(filename)
     sheets = xl.sheet_names
     Sheet = sheets[0]
@@ -34,35 +42,43 @@ def IMPORT(filename): #imports data from excel sheets, must be xlsx no csv
     return GENDATA, HEADER
 
 def STATS(X,Y):
+    """
+    the STATS function takes two data coloumns reffered to X and Y and runs
+    population statistcis to determine if the two datsest are from the same
+    population. The function first uses a Shapiro test on both datasets to
+    determine normality. If both datsests are normally distributed then a
+    Welche's t-test is used, else a Wilcoxon signed-rank test is used. The
+    function then returns the test that was used, the p value and the median
+    value for each dataset.
+
+    :param filename: the full unc path to the xlsx document
+    :return: returns the method used, the P value, the X dataset median, and
+    the y dataset median.
+    """
     CLEANX = [x for x in X if (mt.isnan(x) == False)]
     CLEANY = [x for x in Y if (mt.isnan(x) == False)]
     WX, PX = st.shapiro(CLEANX)
     WY, PY = st.shapiro(CLEANY)
-    STAT, WELCH = st.ttest_ind(CLEANX, CLEANY, equal_var = False) 
+    STAT, WELCH = st.ttest_ind(CLEANX, CLEANY, equal_var = False)
     if PX > 0.05 and PY >0.05:
         METHOD = r"Welche's T-Test"
-        STAT, POP = st.ttest_ind(CLEANX, CLEANY, equal_var = False) 
+        STAT, POP = st.ttest_ind(CLEANX, CLEANY, equal_var = False)
     else:
         METHOD = r"Wilcoxon signed-rank test"
         STAT, POP = st.ranksums(CLEANX,CLEANY)
-#    MEANX = sum(CLEANX)/len(CLEANX)
-#    MEANY = sum(CLEANY)/len(CLEANY)
     print (st.ks_2samp(CLEANX, CLEANY))
     xmedian = np.median(CLEANX)
     ymedian = np.median(CLEANY)
     return METHOD,POP, xmedian, ymedian
 
-def BOXPLOT(VALUES):#calculates the breaks for box plots
-    CLEAN = [x for x in VALUES if (mt.isnan(x) == False)]
-    IQR = np.percentile(CLEAN, 75) - np.percentile(CLEAN, 25)
-    WT = np.percentile(CLEAN, 75) + 1.5*IQR
-    WL = np.percentile(CLEAN, 25) - 1.5*IQR
-    CLEANX = [x for x in CLEAN if (x < WT)]
-    CLEANX = [x for x in CLEAN if (x > WL)]
-    return CLEANX   
- 
 def LINREG(X,Y):
-    # linear regression
+    """
+    LINREG is an implemntation of least squares linear regression.
+
+    :param X: The data to be used as for the X-axis.
+    :param Y: The data to be used as for the Y-axis.
+    :return: returns the slope, intercept, and the R2 for the input data.
+    """
     N = len(X)
     I = 0
     XY = np.zeros([N])
@@ -80,29 +96,44 @@ def LINREG(X,Y):
     for I in range(0,len(Y)):
         SStot[I] = (Y[I] - YSCORE)**2
         F[I] = (M*X[I]) + C
-        SSres[I] = (Y[I] - F[I])**2   
+        SSres[I] = (Y[I] - F[I])**2
     SStot = sum(SStot)
     SSres = sum(SSres)
     R2 = 1-(SSres/SStot)
     return M, C, R2
 #
-def PARSE(HEADER, DATA): #used to parse the header to find the elements and Lat and Longs
+def PARSE(HEADER, DATA):
+    """
+    Parses the header informaiton in order to find geochemical elements and
+    oxides. The function will return a cut down version of the header and the
+    data to just include the geochemical data.
+
+    :param HEADER: the array containing headers for each of the coloumns
+    :param DATA: the array for the data
+    :return: returns the cut header and the cut data which only contains
+    elemental informtation.
+    """
     LENGH = len(HEADER)
     NEWHEAD = np.zeros([LENGH], dtype = "U16")
     # list of common headers, add things here if you need them
-    COMMON = ("Lat", 'Long', 'Latitude', 'Longitude', 'Lab','Sample', 'Time', 'Date', 'Group',
-              'Elev', 'Type', 'Site', 'Comment', 'Depth', 'Size', 'LAT', 
-              'LONG', 'Lab No', 'STATE', 'majors', 'Recode', 'Name', 'East',
-              'North', 'LOI', 'SAMPLE', "GRAIN", "BATCH", "Survey", "ID", "Standard")
-    ELEMENTS = ('SiO2', 'TiO2','Al2O3', 'Fe2O3', 'MnO', 'MgO', 'CaO', 'Na2O', 'K2O', 'P2O5', 'SO3', "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", 'Na', 'Mg', 'Al', 'Si',
-     'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 
-     'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr',
-     'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te',
-     'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd','Pm','Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er',
-     'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl',
-     'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu',
-     'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 
-     'Hs', 'Mt', 'LOI', 'I')
+    COMMON = ("Lat", 'Long', 'Latitude', 'Longitude', 'Lab','Sample', 'Time',
+              'Date', 'Group','Elev', 'Type', 'Site', 'Comment', 'Depth',
+              'Size', 'LAT', 'LONG', 'Lab No', 'STATE', 'majors', 'Recode',
+              'Name', 'East','North', 'LOI', 'SAMPLE', "GRAIN", "BATCH",
+              "Survey", "ID", "Standard")
+    ELEMENTS = ('SiO2', 'TiO2','Al2O3', 'Fe2O3', 'MnO', 'MgO', 'CaO', 'Na2O',
+                'K2O', 'P2O5', 'SO3', "H", "He", "Li", "Be", "B", "C", "N",
+                "O", "F", "Ne", 'Na', 'Mg', 'Al', 'Si','P', 'S', 'Cl', 'Ar',
+                'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni',
+                'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr',
+                'Y', 'Zr','Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd',
+                'In', 'Sn', 'Sb', 'Te','Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr',
+                'Nd','Pm','Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er','Tm', 'Yb',
+                'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg',
+                'Tl','Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th',
+                'Pa', 'U', 'Np', 'Pu','Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
+                'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'LOI',
+                'I')
     I = 0
     K = 0
     for I in range(0, LENGH):
@@ -134,13 +165,13 @@ def PARSE(HEADER, DATA): #used to parse the header to find the elements and Lat 
                 if ELEMENTS[K] in FULLHEAD[I]:
                     if CHECK == 0:
                         TSTORE = ELEMENTS[K]
-    
+
                         CHECK = 1
                     elif CHECK == 1 and len(TSTORE) == 1 and ELEMENTS[K] != 'I':
                         TSTORE = ELEMENTS[K]
             FULLHEAD[I] = TSTORE
     K = 0
-    I = 0  
+    I = 0
     COUNT = 0
     NaNCOUNT = sum(1 for item in NEWHEAD if item==('NaN'))
     DELROWS = np.zeros([NaNCOUNT])
@@ -161,11 +192,11 @@ def PARSE(HEADER, DATA): #used to parse the header to find the elements and Lat 
         check = 0
         for K in range(0, len(ELEMENTS)):
             if ELEMENTS[K] in SNDHEAD[I]:
-                #print ELEMENTS[K], SNDHEAD[I] 
+                #print ELEMENTS[K], SNDHEAD[I]
                 if check == 1:
                     if len(TSTORE) == 1 and len(ELEMENTS[K]) >1:
                         TSTORE = ELEMENTS[K]
-                elif check == 0:          
+                elif check == 0:
                     TSTORE = ELEMENTS[K]
                 check = 1
                 NEWHE[I] = TSTORE
@@ -183,18 +214,19 @@ def PARSE(HEADER, DATA): #used to parse the header to find the elements and Lat 
                 K = K
             else:
                 SNDHEAD[K] = NEWHE[I]
-                K = K + 1 
+                K = K + 1
         #print SNDHEAD
-    return FULLHEAD, SNDHEAD, CUTDATA
+    return SNDHEAD, CUTDATA
 #***Correction Factors***
 #Open the data
-if LEVEL == 0: # function to load and parse the data to determine levelling factors
+if LEVEL == 0:
+# function to load and parse the data to determine levelling factors
     try:
         DATA = IMPORT(DATAONE_filename)
         DATA1_HEADER = DATA[1]
         DATA1 = DATA[0]
     except:
-         sys.exit("Unable to open first datset")
+        sys.exit("Unable to open first datset")
     try:
         DATATWO2 = IMPORT(DATATWO_filename)
         DATA2_HEADER = DATATWO2[1]
@@ -203,8 +235,8 @@ if LEVEL == 0: # function to load and parse the data to determine levelling fact
         sys.exit("Unable to open second datset")
     try:
         # parse the dat in order to split out the element only data
-        full_data_header, DATA1_HEADER, DATA1 = PARSE(DATA1_HEADER,DATA1)
-        full_data2_header, DATA2_HEADER, DATA2 = PARSE(DATA2_HEADER,DATA2)
+        DATA1_HEADER, DATA1 = PARSE(DATA1_HEADER,DATA1)
+        DATA2_HEADER, DATA2 = PARSE(DATA2_HEADER,DATA2)
     except:
         sys.exit("Unable to parse data")
     #check the number of elements is the same
@@ -217,9 +249,9 @@ else:
         DATA = IMPORT(DATAONE_filename)
         DATA_HEADER = DATA[1]
         DATA = DATA[0]
-        full_data_header, DATA1_HEADER, DATA1 = PARSE(DATA1_HEADER,DATA1)
+        DATA1_HEADER, DATA1 = PARSE(DATA1_HEADER,DATA1)
     except:
-         sys.exit("Unable to open first datset")
+        sys.exit("Unable to open first datset")
     try:
         DATATWO2 = IMPORT(DATATWO_filename)
         CF_HEADER = DATATWO2[1]
@@ -247,7 +279,6 @@ if LEVEL == 0 and LIN == 0:
                  kde_kws = {'shade': True, 'linewidth': 3})
         sns.distplot(CLEANY, hist = True, kde = True,
                  kde_kws = {'shade': True, 'linewidth': 3})
-        #TYPE[I],STORE[I,0], STORE[I,1], STORE[I,2] = STATS(DATA1[:,I], DATA2[:,I])
         TYPE[I],STORE[I,0], STORE[I,1], STORE[I,2] = STATS(X, Y)
         plt.axvline(STORE[I,1],linestyle=':')
         plt.axvline(STORE[I,2],  color='darkorange', linestyle=':')
@@ -262,14 +293,15 @@ if LEVEL == 0 and LIN == 0:
         plt.clf()
         #
         HEAD[I] = DATA2_HEADER[I]
-    HEADING = ["Element", "Test", "P-Value", "Dataset 1 Mean", "Dataset 2 Mean", "Slope", "Intercept"]
+    HEADING = ["Element", "Test", "P-Value", "Dataset 1 Mean",
+               "Dataset 2 Mean", "Slope", "Intercept"]
     RESULTS = np.vstack((HEAD, TYPE, STORE[:,0],STORE[:,1],STORE[:,2],slope,intercept)).T
     RESULTS = np.vstack((HEADING, RESULTS))
     DATASET = pd.DataFrame(RESULTS)
     SAVE = r"{}\{}.xlsx".format(SaveLocation,FileName)
     DATASET.to_excel(SAVE, index=False, header = False)
 #
-#Linear regression calculations    
+#Linear regression calculations
 if LEVEL == 0 and LIN == 1:
     #dataset 1 should be the original data, dataset 2 the re-analysis
     print ("Creating correction factors from linear regression")
@@ -308,8 +340,9 @@ if LEVEL == 0 and LIN == 1:
                 SLOPE = huber.coef_[0]
                 INTERCEPT = huber.intercept_
                 FIT = Huber_Score
-                plt.plot(line_X, line_y_huber, color='lightcoral',label='Huber regressor R2 = {}'.format(Huber_Score))
-            STORE[0,J], STORE[1,J], STORE[2,J] = SLOPE, INTERCEPT, FIT 
+                plt.plot(line_X, line_y_huber, color='lightcoral',
+                         label='Huber regressor R2 = {}'.format(Huber_Score))
+            STORE[0,J], STORE[1,J], STORE[2,J] = SLOPE, INTERCEPT, FIT
             FITX = x = np.linspace(-5,200000,100)
             FITY = SLOPE * FITX + INTERCEPT
             plt.plot(FITX, FITY, color = 'lightcoral')
@@ -322,7 +355,7 @@ if LEVEL == 0 and LIN == 1:
             plt.xlabel(DATAONE)
             plt.ylabel(DATATWO)
             TITLE = ('N = ' + str(len(CLEANX)) + '\ny = ' + str(round(SLOPE, 2)) +
-                     'x + ' + str(round(INTERCEPT, 2)) + '\nR$\mathregular{^2}$ = ' + 
+                     'x + ' + str(round(INTERCEPT, 2)) + '\nR$\mathregular{^2}$ = ' +
                      str(round(FIT,3)))
             plt.legend(title=TITLE)
             SAVENAME = r"{}\{}-LR.png".format(SaveLocation,DATA1_HEADER[J])
@@ -384,7 +417,7 @@ if LEVEL == 1:
                     if DATA[J,I] > 0:
                         CORRECTED[J, I] = DATA[J, I]
                     else:
-                        CORRECTED[J, I] = np.nan 
+                        CORRECTED[J, I] = np.nan
     RESULTS = np.vstack((DATA_HEADER, CORRECTED))
     DATASET = pd.DataFrame(RESULTS)
     SAVE = r"{}\{}.xlsx".format(SaveLocation,FileName)
