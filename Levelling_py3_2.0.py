@@ -9,7 +9,7 @@ import sys
 
 # Setting for running
 LEVEL = 0 # use 0 to calculate correction factors, use 1 to level the data
-LIN = 0 # use 0 for population statistcis, use 1 for linear regression
+LIN = 0 # use 0 for population statistics, use 1 for linear regression
 robust = 1 # use 0 for ordinary least squares, use 1 for robust Huber regression (only used for linear regression)
 # Files to run on
 #should be the original dataset for linear regression or the data to level
