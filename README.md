@@ -1,3 +1,11 @@
-# geochemical-levelling
+# Geochemical-levelling
 
-In order to overcome the analytical variation that is inherent between geochemical surveys, and even between batches if different machines are used, presents a significant issue when combining multiple surveys together. To that and end this code was developed to level surface geochemistry data using a variety of methods as outlined in Main et al, in prep. The code has two main functions, the production of correction factors based upon population statistics of a single standard, or though linear regression using reanalysis. Future iterations of the code will allow for the use of multiple standards; however, until that point the median values for each standard can be used as the input for the linear regression to produce a correction factor. Once the correction factors are generated, the code can then be use to level the data. The files that are output from the first step should be used for this levelling. 
+Levelling of geochemical data between surveys is a vital step in using datasets together. This code can apply a number of approaches to eliminate inter-laboratory differences from multi-generational and spatially isolated geochemical surveys. This codes allow the use of a variety of levelling methods: re-analysis, single standards, and multiple standards. The methodology and effectiveness of each of these methods are outlined in Main, P.T. and Champion, D.C., 2022. Levelling of multi-generational and spatially isolated geochemical surveys. Journal of Geochemical Exploration.
+
+# Dependencies
+
+# Running
+
+# Output data
+
+
