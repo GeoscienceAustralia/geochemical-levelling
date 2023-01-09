@@ -3,6 +3,7 @@
 Levelling of geochemical data between surveys is a vital step in using datasets together. This code can apply a number of approaches to eliminate inter-laboratory differences from multi-generational and spatially isolated geochemical surveys. This codes allow the use of a variety of levelling methods: re-analysis, single standards, and multiple standards. The methodology and effectiveness of each of these methods are outlined in Main, P.T. and Champion, D.C., 2022. Levelling of multi-generational and spatially isolated geochemical surveys. Journal of Geochemical Exploration.
 
 ## Dependencies
+The code was developed with the following dependanices and their verisions:
 * numpy - 1.13.3
 * scipy - 0.19.1
 * pandas - 0.25.3
@@ -13,8 +14,10 @@ Levelling of geochemical data between surveys is a vital step in using datasets 
 
 ## Running
 File Requirements: 
-* 
-* 
+* The files should be excel .xlsx files with limtied extrenuous where possible. Whilst the script has an in built parser to find the elements uncencsarry column may produce errors to to inccorect assignemnt. Example files can be found in the examples folder.
+* No modifictions should be made to the generated correction factor files prior to runnign any levelling.
+* If using linear regression of reanalysed samples the first datasetshould be the original dataset and the secodn the reanalysis.
+* If levelling the data, the first dataset should be the data to be levelled and the second the generated correction factors file.
 
 Run Parameters:
 * LEVEL – This variable is use to determine if the data is getting levelled or the correction factors are getting generated. Use 1 for levelling or 0 for generating correction factors.
