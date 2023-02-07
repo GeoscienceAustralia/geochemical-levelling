@@ -26,21 +26,21 @@ import sys
 
 # Setting for running
 LEVEL = 0
-LIN = 1
+LIN = 0
 ROBUST = 0
 # multi-standard linear correction
 STANDARDS = False
-ID_COLUMN = '' # only needed if STANDARDS is set to True
+ID_COLUMN = ' ' # only needed if STANDARDS is set to True
 STANDARD_CUTOFF = 3
 # Files to run on
-DATAONE_FILENAME = r"C:\Users\u29043\Desktop\Ebagoola_Batch_1.xlsx"
-DATATWO_filename = r"C:\Users\u29043\Desktop\Ebagoola_Batch_2.xlsx"
+DATAONE_FILENAME = r" "
+DATATWO_filename = r" "
 # Figure legends
-DATASET_ONE_NAME =  ''
-DATASET_TWO_NAME =  ''
+DATASET_ONE_NAME =  ' '
+DATASET_TWO_NAME =  ' '
 # Save location (set a folder)
-SaveLocation = r''
-FileName = ''
+SaveLocation = r' '
+FileName = ' '
 
 def data_load():
     '''
@@ -123,8 +123,9 @@ def stats(x,y):
     ymedian : float
         Median value for the y array.
     '''
-    cleaned_x = [i for i in x if mt.isnan(x) == False]
-    cleaned_y = [i for i in y if mt.isnan(x) == False]
+    #print (x)
+    cleaned_x = [i for i in x if mt.isnan(i) == False]
+    cleaned_y = [i for i in y if mt.isnan(i) == False]
     # WX, PX = st.shapiro(cleaned_x)
     # WY, PY = st.shapiro(cleaned_y)
     # STAT, WELCH = st.ttest_ind(cleaned_x, cleaned_y, equal_var = False)
@@ -215,7 +216,9 @@ def parse(geochem_data):
               "sampleno", "SampleID", "Sampleno", "Jobno", "Pair", "Order",
               "Internal", "External", "METHOD", "SampleNo", 'Sample No',
               'Sample ID', 'External Lab No.', 'Internal Lab No.', 'Batch',
-              'METHOD MILL', 'GA Sample No.')
+              'METHOD MILL', 'GA Sample No.', 'ENO', 'SITEID', 'LATITUDE',
+              'LONGITUDE', 'BV_ID', 'Pair', 'Batch', 'Order', 'Chem',
+              'Sampleid')
     elements = ('SiO2', 'TiO2','Al2O3', 'Fe2O3', 'FeO','MnO', 'MgO', 'CaO',
                 'Na2O','K2O', 'P2O5', 'SO3', "H", "He", "Li", "Be", "B", "C",
                 "N","O", "F", "Ne", 'Na', 'Mg', 'Al', 'Si','P', 'S', 'Cl',
@@ -228,7 +231,7 @@ def parse(geochem_data):
                 'Tl','Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th',
                 'Pa', 'U', 'Np', 'Pu','Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
                 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'LOI',
-                'I')
+                'I', 'ORGC')
     header = list(geochem_data)
     index = []
     element_list = []
@@ -280,13 +283,19 @@ def standard_correction_factors(element_list, dataset_one, dataset_two):
     #
     for i, element in enumerate(element_list):
         try:
-            X = dataset_one[element]
-            Y = dataset_two[element]
+            #X = dataset_one[element]
+           # Y = dataset_two[element]
+            X = dataset_one[element].apply(str).str.replace('<','-')
+            Y = dataset_two[element].apply(str).str.replace('<','-')
+            print(X,Y)
+            X = X.astype('float64')
+            Y = Y.astype('float64')
             print (element)
             #remove empty values to prevent them interfereing with the stats
             cleaned_x = [x for x in X if mt.isnan(x) == False]
             cleaned_y = [x for x in Y if mt.isnan(x) == False]
-            method[i],store[i,0], store[i,1], store[i,2] = stats(X, Y)
+            print (X, cleaned_x)
+            method[i],store[i,0], store[i,1], store[i,2] = stats(cleaned_x, cleaned_y)
             store[i,3] = store[i,1]/store[i,2]
             sns.distplot(cleaned_x, hist = True, kde = True,
                       kde_kws = {'shade': True, 'linewidth': 3})
@@ -368,9 +377,14 @@ def multi_standard(dataset_one, dataset_two, element):
                                         standard,element]
         datatwo_slice = dataset_two.loc[dataset_two[ID_COLUMN] ==
                                         standard,element]
+        dataone_slice = dataone_slice.apply(str).str.replace('<','-')
+        datatwo_slice = datatwo_slice.apply(str).str.replace('<','-')
+        dataone_slice = dataone_slice.astype('float64')
+        datatwo_slice = datatwo_slice.astype('float64')
         x[i] = np.median(dataone_slice)
         y[i] = np.median(datatwo_slice)
         i +=1
+    print (x,y)
     return x,y
 
 def linear_correction_factor(element_list, dataset_one, dataset_two):
@@ -399,7 +413,6 @@ def linear_correction_factor(element_list, dataset_one, dataset_two):
 
     # print ("Creating correction factors from linear regression")
     store =  np.zeros([3,len(element_list)])
-    print (store)
     #elements_used = ([])
     for i, element in enumerate(element_list):
         print (element)
@@ -407,59 +420,69 @@ def linear_correction_factor(element_list, dataset_one, dataset_two):
         if STANDARDS == True:
             cleanx, cleany = multi_standard(dataset_one, dataset_two, element)
         else:
-            X = dataset_one[element].apply(str).str.replace('<','-')
-            Y = dataset_two[element].apply(str).str.replace('<','-')
-            X = X.astype('float64')
-            Y = Y.astype('float64')
-            # idex_x = X[X.gt(0)].index
-            # idex_y = Y[Y.gt(0)].index
-            x_test = X.gt(0)
-            y_test = Y.gt(0)
-            if len(X[X.gt(0)].index) > len(Y[Y.gt(0)].index):
-                index = np.zeros([len(Y[Y.gt(0)].index)])
-            elif len(X[X.gt(0)].index) < len(Y[Y.gt(0)].index):
-                index = np.zeros([len(X[X.gt(0)].index)])
-            else:
-                index = np.zeros([len(X[X.gt(0)].index)])
-            counter = 0
-            for count, logic in enumerate(x_test):
-                if logic == True and y_test[count] == True:
-                    index[counter] = count
-                    counter += 1
-            cleanx = X.loc[index].to_numpy()
-            cleany = Y.loc[index].to_numpy()
-        slope, intercept, fit = linreg(cleanx, cleany)
-        if ROBUST == 1:
-            cleanx = cleanx.reshape(-1,1)
-            cleany = cleany.reshape(-1,1)
-            huber = linear_model.HuberRegressor().fit(cleanx, cleany)
-            huber_score = round(huber.score(cleanx, cleany),3)
-            slope = huber.coef_[0]
-            intercept = huber.intercept_
-            fit = huber_score
-        store[0,i], store[1,i], store[2,i] = slope, intercept, fit
-        #elements_used.append(element)
-        fitx = np.linspace(-5,200000,100)
-        fity = slope * fitx + intercept
-        plt.plot(fitx, fity, color = 'lightcoral')
-        plt.plot([0,9999999999],[0,9999999999],color = 'k',
-                  linestyle='dashed')
-        plt.xlim(min(cleanx)-(min(cleanx)*0.1),
-                  max(cleanx)+(max(cleanx)*0.1))
-        plt.ylim(min(cleany)-(min(cleany)*0.1),
-                  max(cleany)+(max(cleany)*0.1))
-        plt.scatter(cleanx, cleany, s = 1)
-        plt.title(element)
-        plt.xlabel(DATASET_ONE_NAME)
-        plt.ylabel(DATASET_TWO_NAME)
-        TITLE = ('N = ' + str(len(cleanx)) + '\ny = ' +
-                  str(round(slope, 2)) + 'x + ' + str(round(intercept, 2))+
-                  '\nR$\mathregular{^2}$ = ' + str(round(fit,3)))
-        plt.legend(title=TITLE)
-        SAVENAME = r"{}\{}-LR.png".format(SaveLocation,element)
-        plt.savefig(SAVENAME, format = 'png', dpi = 900)
-        plt.close()
-        plt.clf()
+            try:
+                X = dataset_one[element].apply(str).str.replace('<','-')
+                Y = dataset_two[element].apply(str).str.replace('<','-')
+                print(X,Y)
+                X = X.astype('float64')
+                Y = Y.astype('float64')
+                # idex_x = X[X.gt(0)].index
+                # idex_y = Y[Y.gt(0)].index
+                x_test = X.gt(0)
+                y_test = Y.gt(0)
+                if len(X[X.gt(0)].index) > len(Y[Y.gt(0)].index):
+                    index = np.zeros([len(Y[Y.gt(0)].index)])
+                elif len(X[X.gt(0)].index) < len(Y[Y.gt(0)].index):
+                    index = np.zeros([len(X[X.gt(0)].index)])
+                else:
+                    index = np.zeros([len(X[X.gt(0)].index)])
+                counter = 0
+                for count, logic in enumerate(x_test):
+                    if logic == True and y_test[count] == True:
+                        index[counter] = count
+                        counter += 1
+                cleanx = X.loc[index].to_numpy()
+                cleany = Y.loc[index].to_numpy()
+            except KeyError:
+                cleanx = [0,0]
+                cleany = [0,0]
+        if sum(cleanx) >0 and sum(cleany) >0:
+            slope, intercept, fit = linreg(cleanx, cleany)
+            if ROBUST == 1:
+                cleanx = cleanx.reshape(-1,1)
+                cleany = cleany.reshape(-1,1)
+                huber = linear_model.HuberRegressor().fit(cleanx, cleany)
+                huber_score = round(huber.score(cleanx, cleany),3)
+                slope = huber.coef_[0]
+                intercept = huber.intercept_
+                fit = huber_score
+            store[0,i], store[1,i], store[2,i] = slope, intercept, fit
+            #elements_used.append(element)
+            fitx = np.linspace(-5,200000,100)
+            fity = slope * fitx + intercept
+            plt.plot(fitx, fity, color = 'lightcoral')
+            plt.plot([0,9999999999],[0,9999999999],color = 'k',
+                      linestyle='dashed')
+            min_x_value = min(cleanx)-(min(cleanx)*0.1)
+            if min_x_value < 0:
+                min_x_value = 0
+            min_y_value = min(cleany)-(min(cleany)*0.1)
+            if min_y_value < 0:
+                min_y_value = 0
+            plt.xlim(min_x_value, max(cleanx)+(max(cleanx)*0.1))
+            plt.ylim(min_y_value, max(cleany)+(max(cleany)*0.1))
+            plt.scatter(cleanx, cleany, s = 1)
+            plt.title(element)
+            plt.xlabel(DATASET_ONE_NAME)
+            plt.ylabel(DATASET_TWO_NAME)
+            TITLE = ('N = ' + str(len(cleanx)) + '\ny = ' +
+                      str(round(slope, 2)) + 'x + ' + str(round(intercept, 2))+
+                      '\nR$\mathregular{^2}$ = ' + str(round(fit,3)))
+            plt.legend(title=TITLE)
+            SAVENAME = r"{}\{}-LR.png".format(SaveLocation,element)
+            plt.savefig(SAVENAME, format = 'png', dpi = 900)
+            plt.close()
+            plt.clf()
     store = np.vstack((element_list,store))
     dataset = pd.DataFrame(store)
     print (dataset)
