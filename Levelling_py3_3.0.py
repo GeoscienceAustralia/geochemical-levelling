@@ -28,34 +28,48 @@ import sys
 LEVEL = 0
 LIN = 1
 ROBUST = 0
-STANDARDS = True
-ID_COLUMN = 'SampleID'
+# multi-standard linear correction
+STANDARDS = False
+ID_COLUMN = '' # only needed if STANDARDS is set to True
 STANDARD_CUTOFF = 3
 # Files to run on
 DATAONE_FILENAME = r"C:\Users\u29043\Desktop\Ebagoola_Batch_1.xlsx"
 DATATWO_filename = r"C:\Users\u29043\Desktop\Ebagoola_Batch_2.xlsx"
-#DATAONE_FILENAME = r"C:\Users\u29043\Desktop\GeorgeTown_Orig.xlsx"
-#DATAONE_FILENAME = r"C:\Users\u29043\Desktop\Levelling_Testing\GT_LR_Corrcted.xlsx"
-#DATATWO_filename = r"C:\Users\u29043\Desktop\GeorgeTown_ReAnalysis.xlsx"
-#DATATWO_filename = r"C:\Users\u29043\Desktop\Levelling_Testing\GT_LR_Corrctions.xlsx"
 # Figure legends
-DATASET_ONE_NAME =  'GT_Orig'
-DATASET_TWO_NAME =  'GT_rerun'
+DATASET_ONE_NAME =  ''
+DATASET_TWO_NAME =  ''
 # Save location (set a folder)
-SaveLocation = r'C:\Users\u29043\Desktop\Levelling_Testing'
-#FileName = 'GT_LR_Corrctions'
-FileName = 'GT_LR_Corrctions'
+SaveLocation = r''
+FileName = ''
 
 def data_load():
     '''
+    This function is used to load in two datsets and then parse them if
+    correction factors are being generated. This funciton
 
-
-
-    Returns
+    if LEVEL == 0 Returns
     -------
-    TYPE
-        DESCRIPTION.
+    data1_element_list : array
+        numpy array containing the list of elements in the dataset, calculated
+        through the parse function.
+    data1 : dataframe
+        pandas dataframe containing the first dataset, the element coloumn
+        names have been changed to a standard format using the parse function.
+    data2_element_list : array
+        numpy array containing the list of elements in the dataset, calculated
+        through the parse function.
+    data2 : dataframe
+        pandas dataframe containing the second dataset, the element coloumn
+        names have been changed to a standard format using the parse function.
 
+    if LEVEL != 0 Returns
+    -------
+    data1 : dataframe
+        pandas dataframe containing the first dataset, the element coloumn
+        names have been changed to a standard format using the parse function.
+    data2 : dataframe
+        pandas dataframe conting the second dataset, no parsing has been
+        performed as this is typically the correction factor dataset.
     '''
     try:
         data1 = pd.read_excel(DATAONE_FILENAME, header = 0)
@@ -82,8 +96,8 @@ def data_load():
         sys.exit()
 
 def stats(x,y):
-    """
-    the stats function takes two data coloumns reffered to X and Y and runs
+    '''
+    The stats function takes two data coloumns reffered to X and Y and runs
     population statistcis to determine if the two datsest are from the same
     population. The function first uses a Shapiro test on both datasets to
     determine normality. If both datsests are normally distributed then a
@@ -91,10 +105,24 @@ def stats(x,y):
     function then returns the test that was used, the p value and the median
     value for each dataset.
 
-    :param filename: the full unc path to the xlsx document
-    :return: returns the method used, the P value, the X dataset median, and
-    the y dataset median.
-    """
+    Parameters
+    ----------
+    x : array
+        The data to be used as for the X-axis.
+    y : array
+        The data to be used as for the Y-axis.
+
+    Returns
+    -------
+    method : string
+        The statitstics methos used to compare the two populations.
+    p-value : float
+        The p-value.
+    xmedian : flaot
+        Median valuen for the x array.
+    ymedian : float
+        Median value for the y array.
+    '''
     cleaned_x = [i for i in x if mt.isnan(x) == False]
     cleaned_y = [i for i in y if mt.isnan(x) == False]
     # WX, PX = st.shapiro(cleaned_x)
@@ -114,13 +142,27 @@ def stats(x,y):
     return method,stat[1], xmedian, ymedian
 
 def linreg(x,y):
-    """
-    linreg is an implemntation of least squares linear regression.
+    '''
+    Calculates the slope, intercept, and r2 of two datasets using ordinary
+    least squares linear regression.
 
-    :param X: The data to be used as for the X-axis.
-    :param Y: The data to be used as for the Y-axis.
-    :return: returns the slope, intercept, and the R2 for the input data.
-    """
+    Parameters
+    ----------
+    x : array
+        The data to be used as for the X-axis.
+    y : array
+        The data to be used as for the Y-axis.
+
+    Returns
+    -------
+    m : float
+        Slope of the linear regresison.
+    c : float
+        Intercept of the linear regresison.
+    r2 : float
+        R2 of the linear regresison.
+
+    '''
     n = len(x)
     i = 0
     xy = np.zeros([n])
@@ -286,20 +328,32 @@ def standard_correction_factors(element_list, dataset_one, dataset_two):
 
 def multi_standard(dataset_one, dataset_two, element):
     '''
-
+    Identifies the standards present within the first dataset (dataset_one)
+    based upon repitition of a value in a coloumn. Two global variables set
+    the parameter for finding standards, ID_COLUMN and STANDARD_CUTOFF. The
+    ID_COLUMN value represents the coloumn name in the pandas dataframe. The
+    STANDARD_CUTOFF is a set value where a name must be repted that many times
+    before being added as a standard. The funciton then returns two numpy
+    arrays (one for each dataset) containing the median for each standard.
 
     Parameters
     ----------
-    dataset_one : TYPE
-        DESCRIPTION.
-    dataset_two : TYPE
-        DESCRIPTION.
-    element : TYPE
-        DESCRIPTION.
+    dataset_one : dataframe
+        A pandas dataframe containing the first dataset.
+    dataset_two : dataframe
+        A pandas dataframe containing the second dataset.
+    element : string
+        The elemement to use, this must be the same as the coloumn name in
+        the data frame.
 
     Returns
     -------
-    None.
+    x : array
+        a numpy array containing the median for each standard for the first
+        dataset.
+    y : array
+        a numpy array containing the median for each standard for the second
+        dataset.
 
     '''
     stds_count = dataset_one[ID_COLUMN].value_counts()
@@ -310,8 +364,10 @@ def multi_standard(dataset_one, dataset_two, element):
     print (stds_list)
     i = 0
     for standard in stds_list:
-        dataone_slice = dataset_one.loc[dataset_one[ID_COLUMN] == standard,element]
-        datatwo_slice = dataset_two.loc[dataset_two[ID_COLUMN] == standard,element]
+        dataone_slice = dataset_one.loc[dataset_one[ID_COLUMN] ==
+                                        standard,element]
+        datatwo_slice = dataset_two.loc[dataset_two[ID_COLUMN] ==
+                                        standard,element]
         x[i] = np.median(dataone_slice)
         y[i] = np.median(datatwo_slice)
         i +=1
@@ -319,23 +375,27 @@ def multi_standard(dataset_one, dataset_two, element):
 
 def linear_correction_factor(element_list, dataset_one, dataset_two):
     '''
-
+    Calculates a linear correction factor for each element. The function saves
+    a plot for each element with the linear regression, and a excel file
+    containing the results for each element. This excel file is used for
+    correcting the data if levelling is enabled. The first dataset should be
+    the original data, dataset 2 the re-analysis.
 
     Parameters
     ----------
-    element_list : TYPE
-        DESCRIPTION.
-    dataset_one : TYPE
-        DESCRIPTION.
-    dataset_two : TYPE
-        DESCRIPTION.
+    element_list : array
+        an array containing the elements in the datset, can be generated by
+        parsing the data using the parse funciton.
+    dataset_one : dataframe
+        A pandas dataframe containing the first dataset.
+    dataset_two : dataframe
+        A pandas dataframe containing the second dataset.
 
     Returns
     -------
     None.
 
     '''
-    #dataset 1 should be the original data, dataset 2 the re-analysis
 
     # print ("Creating correction factors from linear regression")
     store =  np.zeros([3,len(element_list)])
@@ -410,17 +470,20 @@ def linear_correction_factor(element_list, dataset_one, dataset_two):
 
 def levelling(dataset, corrections, use_p = True, r2 = False):
     '''
-
+    Levels geochemical data using correction factors generated by
+    standard_correction_factors and linear_correction_factor. The leveling
+    mode is set through the use of a global variable LIN (1 for linear
+    corrections).
 
     Parameters
     ----------
-    dataset : TYPE
+    dataset : dataframe
         DESCRIPTION.
-    corrections : TYPE
+    corrections : dataframe
         DESCRIPTION.
-    use_p : TYPE, optional
+    use_p : boolean, optional
         DESCRIPTION. The default is True.
-    r2 : TYPE, optional
+    r2 : boolean, optional
         DESCRIPTION. The default is False.
 
     Returns
@@ -457,7 +520,7 @@ def levelling(dataset, corrections, use_p = True, r2 = False):
                 for index, value in enumerate (dataset[element]):
                     if value >0:
                         dataset[element].loc[index] = slope*value+intercept
-                     #   dataset[element].loc[index] = (value/slope) - intercept
+                     # dataset[element].loc[index] = (value/slope) - intercept
             except KeyError:
                 print ("Skipped")
             print (dataset[element])
@@ -468,7 +531,8 @@ def levelling(dataset, corrections, use_p = True, r2 = False):
 
 def main():
     '''
-
+    Only used when the script is running stand alone. This will not run if
+    calling this code from another script.
 
     Returns
     -------
