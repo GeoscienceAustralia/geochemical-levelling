@@ -44,8 +44,9 @@ FileName = ' '
 
 def data_load():
     '''
-    This function is used to load in two datsets and then parse them if
-    correction factors are being generated. This funciton
+    This function is used to load in two datasets and then parse them if
+    correction factors are being generated. This function will return different
+    variables depending on whether levelling is being run or not.
 
     if LEVEL == 0 Returns
     -------
@@ -53,19 +54,19 @@ def data_load():
         numpy array containing the list of elements in the dataset, calculated
         through the parse function.
     data1 : dataframe
-        pandas dataframe containing the first dataset, the element coloumn
+        pandas dataframe containing the first dataset, the element column
         names have been changed to a standard format using the parse function.
     data2_element_list : array
         numpy array containing the list of elements in the dataset, calculated
         through the parse function.
     data2 : dataframe
-        pandas dataframe containing the second dataset, the element coloumn
+        pandas dataframe containing the second dataset, the element column
         names have been changed to a standard format using the parse function.
 
     if LEVEL != 0 Returns
     -------
     data1 : dataframe
-        pandas dataframe containing the first dataset, the element coloumn
+        pandas dataframe containing the first dataset, the element column
         names have been changed to a standard format using the parse function.
     data2 : dataframe
         pandas dataframe conting the second dataset, no parsing has been
@@ -97,10 +98,10 @@ def data_load():
 
 def stats(x,y):
     '''
-    The stats function takes two data coloumns reffered to X and Y and runs
-    population statistcis to determine if the two datsest are from the same
+    The stats function takes two data columns referred to X and Y and runs
+    population statistics to determine if the two datasets are from the same
     population. The function first uses a Shapiro test on both datasets to
-    determine normality. If both datsests are normally distributed then a
+    determine normality. If both datasets are normally distributed then a
     Welche's t-test is used, else a Wilcoxon signed-rank test is used. The
     function then returns the test that was used, the p value and the median
     value for each dataset.
@@ -115,11 +116,11 @@ def stats(x,y):
     Returns
     -------
     method : string
-        The statitstics methos used to compare the two populations.
+        The statistical  method used to compare the two populations.
     p-value : float
         The p-value.
     xmedian : flaot
-        Median valuen for the x array.
+        Median value for the x array.
     ymedian : float
         Median value for the y array.
     '''
@@ -157,11 +158,11 @@ def linreg(x,y):
     Returns
     -------
     m : float
-        Slope of the linear regresison.
+        Slope of the linear regression.
     c : float
-        Intercept of the linear regresison.
+        Intercept of the linear regression.
     r2 : float
-        R2 of the linear regresison.
+        R2 of the linear regression.
 
     '''
     n = len(x)
@@ -190,22 +191,23 @@ def linreg(x,y):
 
 def parse(geochem_data):
     '''
-    Parses the header informaiton in order to find geochemical elements and
+    Parses the header information in order to find geochemical elements and
     oxides. The function will return a cut down version of the header and the
     data to just include the geochemical data.
 
     Parameters
     ----------
-    header : array of strings
-        The array containing headers for each of the coloumns.
+    geochem_data : dataframe
+        A pandas dataframe containing geochemistry data with headers to be
+        parsed.
 
     Returns
     -------
-    sndhead : array of strings
-        A cut down header containing only chemical elements.
-    fullhead : array of strings
-        The full header, with Longitude and Latitude changed to a standardised
-        name and the elements changed to standard notation.
+    element_list : array
+        An array containing the elements and oxides within the dataset.
+    geochem_data : dataframe
+        The input dataframe returned with the header information updated to
+        searchable .
 
     '''
     common_headers = ("Lat", 'Long', 'Latitude', 'Longitude', 'Lab','Sample',
@@ -258,18 +260,17 @@ def parse(geochem_data):
 def standard_correction_factors(element_list, dataset_one, dataset_two):
     '''
     Used for producing the correction factor using a single standard that is
-    used in both datasets. If multpile shared standards exist then it is
+    used in both datasets. If multiple shared standards exist then it is
     best to use the multi standard methodology.
-
 
     Parameters
     ----------
     element_list : TYPE
         DESCRIPTION.
     dataset_one : TYPE
-        Pandas dataframe containg the first dataset.
+        Pandas dataframe containing  the first dataset.
     dataset_two : TYPE
-        Pandas dataframe containg the first dataset.
+        Pandas dataframe containing  the first dataset.
 
     Returns
     -------
@@ -338,11 +339,11 @@ def standard_correction_factors(element_list, dataset_one, dataset_two):
 def multi_standard(dataset_one, dataset_two, element):
     '''
     Identifies the standards present within the first dataset (dataset_one)
-    based upon repitition of a value in a coloumn. Two global variables set
+    based upon repetition of a value in a column. Two global variables set
     the parameter for finding standards, ID_COLUMN and STANDARD_CUTOFF. The
-    ID_COLUMN value represents the coloumn name in the pandas dataframe. The
-    STANDARD_CUTOFF is a set value where a name must be repted that many times
-    before being added as a standard. The funciton then returns two numpy
+    ID_COLUMN value represents the column name in the pandas dataframe. The
+    STANDARD_CUTOFF is a set value where a name must be repeated that many times
+    before being added as a standard. The function then returns two numpy
     arrays (one for each dataset) containing the median for each standard.
 
     Parameters
@@ -352,7 +353,7 @@ def multi_standard(dataset_one, dataset_two, element):
     dataset_two : dataframe
         A pandas dataframe containing the second dataset.
     element : string
-        The elemement to use, this must be the same as the coloumn name in
+        The element to use, this must be the same as the column  name in
         the data frame.
 
     Returns
@@ -398,8 +399,8 @@ def linear_correction_factor(element_list, dataset_one, dataset_two):
     Parameters
     ----------
     element_list : array
-        an array containing the elements in the datset, can be generated by
-        parsing the data using the parse funciton.
+        an array containing the elements in the dataset, can be generated by
+        parsing the data using the parse function.
     dataset_one : dataframe
         A pandas dataframe containing the first dataset.
     dataset_two : dataframe
@@ -494,20 +495,20 @@ def linear_correction_factor(element_list, dataset_one, dataset_two):
 def levelling(dataset, corrections, use_p = True, r2 = False):
     '''
     Levels geochemical data using correction factors generated by
-    standard_correction_factors and linear_correction_factor. The leveling
+    standard_correction_factors and linear_correction_factor. The levelling
     mode is set through the use of a global variable LIN (1 for linear
     corrections).
 
     Parameters
     ----------
     dataset : dataframe
-        DESCRIPTION.
+        The geochemical dataset.
     corrections : dataframe
-        DESCRIPTION.
-    use_p : boolean, optional
-        DESCRIPTION. The default is True.
+        The corrections dataset.
+    use_p : Boolean, optional
+        The calculated  p value from population statistics. The default is True.
     r2 : boolean, optional
-        DESCRIPTION. The default is False.
+        The R2 value of the linear regression. The default is False.
 
     Returns
     -------
