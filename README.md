@@ -2,6 +2,8 @@
 
 Levelling of geochemical data between surveys is a vital step in using datasets together. This code can apply a number of approaches to eliminate inter-laboratory differences from multi-generational and spatially isolated geochemical surveys. This codes allow the use of a variety of levelling methods: re-analysis, single standards, and multiple standards. The methodology and effectiveness of each of these methods are outlined in Main, P.T. and Champion, D.C., 2022. Levelling of multi-generational and spatially isolated geochemical surveys. Journal of Geochemical Exploration.
 
+This script was developed as part of Geoscience Australia’s Exploring for the Future program. Geoscience Australia’s Exploring for the Future program provides precompetitive information to inform decision-making by government, community and industry on the sustainable development of Australia's mineral, energy and groundwater resources. By gathering, analysing and interpreting new and existing precompetitive geoscience data and knowledge, we are building a national picture of Australia’s geology and resource potential. This leads to a strong economy, resilient society and sustainable environment for the benefit of all Australians. This includes supporting Australia’s transition to net zero emissions, strong, sustainable resources and agriculture sectors, and economic opportunities and social benefits for Australia’s regional and remote communities. The Exploring for the Future program, which commenced in 2016, is an eight year, $225m investment by the Australian Government.
+
 ## Dependencies
 The code was developed with the following dependencies and their versions:
 * numpy - 1.13.3
