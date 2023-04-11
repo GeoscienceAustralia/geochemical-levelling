@@ -1,5 +1,5 @@
 '''
-############################################################################
+##############################################################################
 Copyright 2022 Commonwealth of Australia (Geoscience Australia)
  
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-############################################################################
+##############################################################################
 
 LEVEL - can be set to 0 to calcualte the correction factors, and set to 1 in
     order to level the data.
@@ -30,7 +30,7 @@ DATAONE - Legend information - X for LR (should be the original dataset).
 DATATWO - Legend information - Y for LR (should be the re-analysed dataset).
 SaveLocation - file save location.
 FileName - name of the file to be saved.
-############################################################################
+##############################################################################
 '''
 
 import math as mt
