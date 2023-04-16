@@ -41,13 +41,13 @@ Run Parameters:
 * When running in levelling mode, the script will output a single excel file containing the levelled data.
 
 ## Dataset References
-Example 1
+### Example 1
 *	Group 1 – Northern Australia Geochemical Survey total digestion <75 µm – BASTRAKOV, E. N., MAIN, P. T., WYGRALAK, A. S., WILFORD, J., CZARNOTA, K. & KHAN, M. 2018. Northern Australia Geochemical Survey data release 1: total (fine fraction) and MMI™ element contents. record 2018/06. Geoscience Australia.
 *	Group 2 – Levelled Geochemical Baseline of Australia – Main, P.T. and Champion, D.C., 2022. Levelling of multi-generational and spatially isolated geochemical surveys. Journal of Geochemical Exploration, 240, p.107028.
-Example 2
+### Example 2
 *	Group 1 – Levelled Geochemical Baseline of Australia – Main, P.T. and Champion, D.C., 2022. Levelling of multi-generational and spatially isolated geochemical surveys. Journal of Geochemical Exploration, 240, p.107028.
 *	Group 2 – Levelled Geochemical Baseline of Australia – Main, P.T. and Champion, D.C., 2022. Levelling of multi-generational and spatially isolated geochemical surveys. Journal of Geochemical Exploration, 240, p.107028.
-Example 3
+### Example 3
 *	Group 1 – Northern Australia Geochemical Survey total digestion <75 µm ICP-MS data BASTRAKOV, E. N., MAIN, P. T., WYGRALAK, A. S., WILFORD, J., CZARNOTA, K. & KHAN, M. 2018. Northern Australia Geochemical Survey data release 1: total (fine fraction) and MMI™ element contents. record 2018/06. Geoscience Australia.
 *	Group 2 – Northern Australia Geochemical Survey total digestion <2 mm ICP-MS data – MAIN, P. T., BASTRAKOV, E. N., WYGRALAK, A. S., CZARNOTA, K. & KHAN, M. 2019. Northern Australia Geochemical Survey Data Release 2: Total (Coarse Fraction), Aqua Regia (Coarse and Fine Fraction), and Fire Assay (Coarse and Fine Fraction) Element Contents. Geoscience Australia Record, 2019/02.
 
