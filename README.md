@@ -9,7 +9,6 @@ The code was developed with the following dependencies and their versions:
 * numpy - 1.13.3
 * scipy - 0.19.1
 * pandas - 0.25.3
-* math - 
 * matplotlib - 2.0.2
 * seaborn - 0.9.0
 * sklearn - 0.20.1
