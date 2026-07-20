@@ -238,7 +238,7 @@ def parse(geochem_data):
               'Sample ID', 'External Lab No.', 'Internal Lab No.', 'Batch',
               'METHOD MILL', 'GA Sample No.', 'ENO', 'SITEID', 'LATITUDE',
               'LONGITUDE', 'BV_ID', 'Pair', 'Batch', 'Order', 'Chem',
-              'Sampleid')
+              'Sampleid', 'LabNo', 'Acq', 'ExternalNo')
     elements = ('SiO2', 'TiO2','Al2O3', 'Fe2O3', 'FeO','MnO', 'MgO', 'CaO',
                 'Na2O','K2O', 'P2O5', 'SO3', "H", "He", "Li", "Be", "B", "C",
                 "N","O", "F", "Ne", 'Na', 'Mg', 'Al', 'Si','P', 'S', 'Cl',
@@ -251,7 +251,7 @@ def parse(geochem_data):
                 'Tl','Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th',
                 'Pa', 'U', 'Np', 'Pu','Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
                 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'LOI',
-                'I', 'ORGC')
+                'I', 'ORGC', 'BaO', 'SrO', 'V2O5', 'Cr2O3')
     header = list(geochem_data)
     index = []
     element_list = []
